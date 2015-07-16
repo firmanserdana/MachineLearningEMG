@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Items>
+  <Component Name="scope1" X="272" Y="192" />
+  <Component Name="abs1" X="272" Y="64" />
+  <Component Name="iir1" X="448" Y="64" />
+  <Component Name="logger1" X="64" Y="336" />
+  <Component Name="player1" X="64" Y="192" />
+  <Component Name="randomGen1" X="64" Y="64" />
+</Items>
