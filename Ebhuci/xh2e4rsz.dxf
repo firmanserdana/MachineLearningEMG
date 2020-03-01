@@ -38,7 +38,6 @@ using Encog.Neural.Networks.Training.Propagation.SCG;
 using Encog.MathUtil.Randomize.Generate;
 using Encog.ML.Data.Versatile.Normalizers.Strategy;
 using CsvFile;
-using System.Globalization;
 
 
 
@@ -47,11 +46,9 @@ namespace Ebhuci
     public partial class Form3 : Form
     {
 
-        List<double> data = new List<double>();
-        double[] dataMagnitude;
-        double[] MAVu, RMSu, VARu, SDu, WLu, ZCu, SSCu, MAVd, RMSd, VARd, SDd, WLd, ZCd, SSCd, MAVr, RMSr, VARr, SDr, WLr, ZCr, SSCr, MAVl, RMSl, VARl, SDl, WLl, ZCl, SSCl;
-        string[] lines, w1, w2;
-        string[] minmax = new string[20];
+        string[] data;
+        double[] dataMagnitude, MAVu, RMSu, VARu, SDu, WLu, ZCu, SSCu, MAVd, RMSd, VARd, SDd, WLd, ZCd, SSCd, MAVr, RMSr, VARr, SDr, WLr, ZCr, SSCr, MAVl, RMSl, VARl, SDl, WLl, ZCl, SSCl;
+
         IMLTrain train;
 
         public Form3()
@@ -86,6 +83,7 @@ namespace Ebhuci
 
         private void button1_Click(object sender, EventArgs e)
         {
+            //openFileDialog1.Multiselect = true;
             openFileDialog1.Title = "Open Raw EMG File...";
             openFileDialog1.FileName = "";
             openFileDialog1.Filter = "CSV (comma delimited)|*.csv|All Files|*.*";
@@ -96,101 +94,87 @@ namespace Ebhuci
             }
             else
             {
-                int j = 0;
-                List<string> columns = new List<string>();
-                FeatureExtract Inputs = new FeatureExtract();
-                var line = File.ReadLines(openFileDialog1.FileName).Count();
-                MAVu = new double[line];
-                RMSu = new double[line];
-                VARu = new double[line];
-                SDu = new double[line];
-                WLu = new double[line];
-                ZCu = new double[line];
-                SSCu = new double[line];
-                MAVd = new double[line];
-                RMSd = new double[line];
-                VARd = new double[line];
-                SDd = new double[line];
-                WLd = new double[line];
-                ZCd = new double[line];
-                SSCd = new double[line];
-                MAVr = new double[line];
-                RMSr = new double[line];
-                VARr = new double[line];
-                SDr = new double[line];
-                WLr = new double[line];
-                ZCr = new double[line];
-                SSCr = new double[line];
-                MAVl = new double[line];
-                RMSl = new double[line];
-                VARl = new double[line];
-                SDl = new double[line];
-                WLl = new double[line];
-                ZCl = new double[line];
-                SSCl = new double[line];
-
-                using (var reader = new CsvFileReader(openFileDialog1.FileName))
+                data = File.ReadAllLines(openFileDialog1.FileName);
+                MAVu = new double[data.Length];
+                RMSu = new double[openFileDialog1.FileNames.Length];
+                VARu = new double[openFileDialog1.FileNames.Length];
+                SDu = new double[openFileDialog1.FileNames.Length];
+                WLu = new double[openFileDialog1.FileNames.Length];
+                ZCu = new double[openFileDialog1.FileNames.Length];
+                SSCu = new double[openFileDialog1.FileNames.Length];
+                MAVd = new double[openFileDialog1.FileNames.Length];
+                RMSd = new double[openFileDialog1.FileNames.Length];
+                VARd = new double[openFileDialog1.FileNames.Length];
+                SDd = new double[openFileDialog1.FileNames.Length];
+                WLd = new double[openFileDialog1.FileNames.Length];
+                ZCd = new double[openFileDialog1.FileNames.Length];
+                SSCd = new double[openFileDialog1.FileNames.Length];
+                MAVr = new double[openFileDialog1.FileNames.Length];
+                RMSr = new double[openFileDialog1.FileNames.Length];
+                VARr = new double[openFileDialog1.FileNames.Length];
+                SDr = new double[openFileDialog1.FileNames.Length];
+                WLr = new double[openFileDialog1.FileNames.Length];
+                ZCr = new double[openFileDialog1.FileNames.Length];
+                SSCr = new double[openFileDialog1.FileNames.Length];
+                MAVl = new double[openFileDialog1.FileNames.Length];
+                RMSl = new double[openFileDialog1.FileNames.Length];
+                VARl = new double[openFileDialog1.FileNames.Length];
+                SDl = new double[openFileDialog1.FileNames.Length];
+                WLl = new double[openFileDialog1.FileNames.Length];
+                ZCl = new double[openFileDialog1.FileNames.Length];
+                SSCl = new double[openFileDialog1.FileNames.Length];
+                for (int i = 0; i < openFileDialog1.FileNames.Length; i++)
                 {
-                    while (reader.ReadRow(columns))
+
+                    dataMagnitude = data.Select(x => double.Parse(x)).ToArray();
+
+                    FeatureExtract Inputs = new FeatureExtract();
+                    Inputs.dataMagnitude = dataMagnitude;
+                    Inputs.Feature();
+
+                    string str = comboBox1.SelectedItem.ToString();
+                    switch (str)
                     {
-                        //data = columns.Select(x => double.Parse(x, NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture)).ToList();
-                        for (int i = 0; i < 20; i++)
-                        {
-                            data.Add(double.Parse(columns[i]));
-                        }
+                        case "Up":
 
-                        dataMagnitude = data.ToArray();
-                        Inputs.dataMagnitude = dataMagnitude;
-                        Inputs.Feature();
-                        //dataGridView1.Rows.Add(columns.ToArray());
-                        data.Clear();
-                        string str = comboBox1.SelectedItem.ToString();
-                        switch (str)
-                        {
-                            case "Up":
-
-                                MAVu[j] = Inputs.MAV;
-                                RMSu[j] = Inputs.RMS;
-                                VARu[j] = Inputs.VAR;
-                                SDu[j] = Inputs.SD;
-                                WLu[j] = Inputs.WL;
-                                ZCu[j] = Inputs.ZC;
-                                SSCu[j] = Inputs.SSC;
-                                break;
-                            case "Down":
-                                MAVd[j] = Inputs.MAV;
-                                RMSd[j] = Inputs.RMS;
-                                VARd[j] = Inputs.VAR;
-                                SDd[j] = Inputs.SD;
-                                WLd[j] = Inputs.WL;
-                                ZCd[j] = Inputs.ZC;
-                                SSCd[j] = Inputs.SSC;
-                                break;
-                            case "Right":
-                                MAVr[j] = Inputs.MAV;
-                                RMSr[j] = Inputs.RMS;
-                                VARr[j] = Inputs.VAR;
-                                SDr[j] = Inputs.SD;
-                                WLr[j] = Inputs.WL;
-                                ZCr[j] = Inputs.ZC;
-                                SSCr[j] = Inputs.SSC;
-                                break;
-                            case "Left":
-                                MAVl[j] = Inputs.MAV;
-                                RMSl[j] = Inputs.RMS;
-                                VARl[j] = Inputs.VAR;
-                                SDl[j] = Inputs.SD;
-                                WLl[j] = Inputs.WL;
-                                ZCl[j] = Inputs.ZC;
-                                SSCl[j] = Inputs.SSC;
-                                break;
-                        }
-                        j++;
+                            MAVu[i] = Inputs.MAV;
+                            RMSu[i] = Inputs.RMS;
+                            VARu[i] = Inputs.VAR;
+                            SDu[i] = Inputs.SD;
+                            WLu[i] = Inputs.WL;
+                            ZCu[i] = Inputs.ZC;
+                            SSCu[i] = Inputs.SSC;
+                            break;
+                        case "Down":
+                            MAVd[i] = Inputs.MAV;
+                            RMSd[i] = Inputs.RMS;
+                            VARd[i] = Inputs.VAR;
+                            SDd[i] = Inputs.SD;
+                            WLd[i] = Inputs.WL;
+                            ZCd[i] = Inputs.ZC;
+                            SSCd[i] = Inputs.SSC;
+                            break;
+                        case "Right":
+                            MAVr[i] = Inputs.MAV;
+                            RMSr[i] = Inputs.RMS;
+                            VARr[i] = Inputs.VAR;
+                            SDr[i] = Inputs.SD;
+                            WLr[i] = Inputs.WL;
+                            ZCr[i] = Inputs.ZC;
+                            SSCr[i] = Inputs.SSC;
+                            break;
+                        case "Left":
+                            MAVl[i] = Inputs.MAV;
+                            RMSl[i] = Inputs.RMS;
+                            VARl[i] = Inputs.VAR;
+                            SDl[i] = Inputs.SD;
+                            WLl[i] = Inputs.WL;
+                            ZCl[i] = Inputs.ZC;
+                            SSCl[i] = Inputs.SSC;
+                            break;
                     }
+
                 }
-
-
-
                 saveFileDialog1.Title = "Save Extracted Features to..";
                 saveFileDialog1.FileName = "";
                 saveFileDialog1.Filter = "CSV (comma delimited)|*.csv|All Files|*.*";
@@ -214,45 +198,45 @@ namespace Ebhuci
                             }
                             file.Close();
 
-                            for (int i = 0; i < MAVu.Length; i++)
+                            for (int i = 0; i < openFileDialog1.FileNames.Length; i++)
                             {
                                 dataGridView1.Rows.Add(MAVu[i], RMSu[i], VARu[i], SDu[i], WLu[i], ZCu[i], SSCu[i], "up");
                             }
 
                             break;
                         case "Down":
-                            for (int i = 0; i < MAVd.Length; i++)
+                            for (int i = 0; i < MAVu.Length; i++)
                             {
                                 file.WriteLine(MAVd[i] + ";" + RMSd[i] + ";" + VARd[i] + ";" + SDd[i] + ";" + WLd[i] + ";" + ZCd[i] + ";" + SSCd[i] + ";Down");
                             }
                             file.Close();
 
-                            for (int i = 0; i < MAVd.Length; i++)
+                            for (int i = 0; i < openFileDialog1.FileNames.Length; i++)
                             {
                                 dataGridView1.Rows.Add(MAVd[i], RMSd[i], VARd[i], SDd[i], WLd[i], ZCd[i], SSCd[i], "down");
                             }
 
                             break;
                         case "Right":
-                            for (int i = 0; i < MAVr.Length; i++)
+                            for (int i = 0; i < MAVu.Length; i++)
                             {
                                 file.WriteLine(MAVr[i] + ";" + RMSr[i] + ";" + VARr[i] + ";" + SDr[i] + ";" + WLr[i] + ";" + ZCr[i] + ";" + SSCr[i] + ";Right");
                             }
                             file.Close();
 
-                            for (int i = 0; i < MAVr.Length; i++)
+                            for (int i = 0; i < openFileDialog1.FileNames.Length; i++)
                             {
                                 dataGridView1.Rows.Add(MAVr[i], RMSr[i], VARr[i], SDr[i], WLr[i], ZCr[i], SSCr[i], "right");
                             }
                             break;
                         case "Left":
-                            for (int i = 0; i < MAVl.Length; i++)
+                            for (int i = 0; i < MAVu.Length; i++)
                             {
                                 file.WriteLine(MAVl[i] + ";" + RMSl[i] + ";" + VARl[i] + ";" + SDl[i] + ";" + WLl[i] + ";" + ZCl[i] + ";" + SSCl[i] + ";Left");
                             }
                             file.Close();
 
-                            for (int i = 0; i < MAVl.Length; i++)
+                            for (int i = 0; i < openFileDialog1.FileNames.Length; i++)
                             {
                                 dataGridView1.Rows.Add(MAVl[i], RMSl[i], VARl[i], SDl[i], WLl[i], ZCl[i], SSCl[i], "left");
                             }
@@ -306,40 +290,20 @@ namespace Ebhuci
 
                     for (int i = 0; i < 8; i++)
                     {
-                        File1.Write("{");
                         for (int j = 0; j < 10; j++)
                         {
-                            File1.Write(JST.GetWeight(0, i, j));
-                            if (j < 9)
-                            {
-                                File1.Write(",");
-                            }
+                            File1.Write(JST.GetWeight(0, i, j) + ",");
 
-                        }
-                        File1.Write("}");
-                        if (i < 7)
-                        {
-                            File1.Write(",");
                         }
                         File1.Write("\n");
                     }
                     File1.Close();
                     for (int i = 0; i < 11; i++)
                     {
-                        File2.Write("{");
                         for (int j = 0; j < 4; j++)
                         {
-                            File2.Write(JST.GetWeight(1, i, j));
-                            if (j < 3)
-                            {
-                                File2.Write(",");
-                            }
+                            File2.Write(JST.GetWeight(1, i, j) + ",");
 
-                        }
-                        File2.Write("}");
-                        if (i < 10)
-                        {
-                            File2.Write(",");
                         }
                         File2.Write("\n");
                     }
@@ -359,7 +323,7 @@ namespace Ebhuci
             JST.Structure.FinalizeStructure();
             JST.Reset();
 
-            
+
             openFileDialog1.Title = "Open Feature File...";
             openFileDialog1.FileName = "";
             openFileDialog1.Filter = "CSV (comma delimited)|*.csv|All Files|*.*";
@@ -381,6 +345,7 @@ namespace Ebhuci
                 ColumnDefinition outputColumn = InputJST.DefineSourceColumn("Arrow", 7, ColumnType.Nominal);
                 InputJST.DefineSingleOutputOthersInput(outputColumn);
                 InputJST.Analyze();
+
                 var model = new EncogModel(InputJST);
 
                 model.SelectMethod(InputJST, MLMethodFactory.TypeFeedforward);//, "?:B->SIGMOID->10:B->SIGMOID->?", MLTrainFactory.TypeLma, "LR=0.7, MOM=0.3");
@@ -428,59 +393,43 @@ namespace Ebhuci
                 }
 
 
-                
+
 
                 var t = 0;
-                var i = 0;
 
                 Stopwatch ticker = new Stopwatch();
                 Encog.MathUtil.Error.ErrorCalculation.Mode = Encog.MathUtil.Error.ErrorCalculationMode.MSE;
                 double error = 0;
-                List<double> valid = new List<double>();
-                
+
+                double validating = 0;
                 ticker.Start();
                 do
                 {
                     train.Iteration();
 
                     error = JST.CalculateError(q);
-                    valid.Add(JST.CalculateError(r));
+                    validating = JST.CalculateError(r);
 
 
                     listError.Add(t, error);
 
-                    listValid.Add(t, valid[t]);
+                    listValid.Add(t, validating);
 
 
                     zedGraphControl1.AxisChange();
                     zedGraphControl1.Invalidate();
-                    if (t>0)
+                    if (validating < 0.18)
                     {
-                        if (valid[t]>valid[t-1])
-                        {
-                            i++;  
-                        }
+                        EncogDirectoryPersistence.SaveObject(new FileInfo(openFileDialog1.FileName + "valid_network.eg"), JST);
+                        textBox1.Text = "V= " + Convert.ToString(validating) + " best epoch=" + Convert.ToString(t);
+                        // break;
                     }
-                    if (i>10)
-                    {
-                        
-            //            EncogDirectoryPersistence.SaveObject(new FileInfo(openFileDialog1.FileName + "_valid_network.eg"), JST);
-                        textBox1.Text = "V= " + Convert.ToString(valid[t]) + " best epoch=" + Convert.ToString(t);
-                        if (valid[t] > 0.1)
-                        {
-                            textBox1.Text = "Validation not satisfied, stopped at E= " + Convert.ToString(error);
-
-                        }
-                        break;
-                    }
-                    
                     t++;
 
                 } while (error > 0.001 && t < 1000);
                 ticker.Stop();
 
-                
-                        
+
                 //textBox1.Text += "E= " + Convert.ToString(error);
                 textBox2.Text = "epoch= " + Convert.ToString(t) + " & time= " + Convert.ToString(ticker.ElapsedMilliseconds) + "ms";
                 ticker.Reset();
@@ -595,57 +544,40 @@ namespace Ebhuci
 
 
                 var t = 0;
-                var i = 0;
 
                 Stopwatch ticker = new Stopwatch();
                 Encog.MathUtil.Error.ErrorCalculation.Mode = Encog.MathUtil.Error.ErrorCalculationMode.MSE;
                 double error = 0;
-                List<double> valid = new List<double>();
 
+                double validating = 0;
                 ticker.Start();
                 do
                 {
                     train.Iteration();
 
                     error = JST.CalculateError(q);
-                    valid.Add(JST.CalculateError(r));
+                    validating = JST.CalculateError(r);
 
 
                     listError.Add(t, error);
 
-                    listValid.Add(t, valid[t]);
+                    listValid.Add(t, validating);
 
 
                     zedGraphControl1.AxisChange();
                     zedGraphControl1.Invalidate();
-                    if (t > 0)
+                    if (validating < 0.18)
                     {
-                        if (valid[t] > valid[t - 1])
-                        {
-                            i++;
-                        }
+                        EncogDirectoryPersistence.SaveObject(new FileInfo(openFileDialog1.FileName + "valid_network.eg"), JST);
+                        textBox1.Text = "V= " + Convert.ToString(validating) + " best epoch=" + Convert.ToString(t);
+                        // break;
                     }
-
-                    if (i > 10)
-                    {
-
-                        //EncogDirectoryPersistence.SaveObject(new FileInfo(openFileDialog1.FileName + "_valid_network.eg"), JST);
-                        textBox1.Text = "V= " + Convert.ToString(valid[t]) + " best epoch=" + Convert.ToString(t);
-                        if (valid[t] > 0.1)
-                        {
-                            textBox1.Text = "Validation not satisfied, stopped at E= " + Convert.ToString(error);
-
-                        }
-                        break;
-                    }
-
                     t++;
 
                 } while (error > 0.001 && t < 1000);
                 ticker.Stop();
 
 
-                textBox1.Text = "V= " + Convert.ToString(valid[t-1]) + " best epoch=" + Convert.ToString(t);
                 //textBox1.Text += "E= " + Convert.ToString(error);
                 textBox2.Text = "epoch= " + Convert.ToString(t) + " & time= " + Convert.ToString(ticker.ElapsedMilliseconds) + "ms";
                 ticker.Reset();
@@ -694,10 +626,7 @@ namespace Ebhuci
                 else
                 {
                     CSVMLDataSet j = new CSVMLDataSet(openFileDialog1.FileName, 7, 4, false, CSVFormat.DecimalComma, false);
-                    
                     IMLDataSet q = new BasicMLDataSet(j);
-                    
-                    
                     saveFileDialog1.Title = "Save computed output..";
                     saveFileDialog1.FileName = "";
                     saveFileDialog1.Filter = "CSV (comma delimited)|*.csv|All Files|*.*";
@@ -713,7 +642,7 @@ namespace Ebhuci
                         foreach (IMLDataPair pair in q)
                         {
                             IMLData output = JST.Compute(pair.Input);
-                            
+
                             dataGridView4.Rows.Add(output[0], output[1], output[2], output[3]);
 
                             m.WriteLine(output[0] + ";" + output[1] + ";" + output[2] + ";" + output[3]);
@@ -767,40 +696,20 @@ namespace Ebhuci
 
                     for (int i = 0; i < 21; i++)
                     {
-                        File1.Write("{");
                         for (int j = 0; j < 10; j++)
                         {
-                            File1.Write(JST.GetWeight(0, i, j));
-                            if (j < 9)
-                            {
-                                File1.Write(",");
-                            }
+                            File1.Write(JST.GetWeight(0, i, j) + ",");
 
-                        }
-                        File1.Write("}");
-                        if (i < 20)
-                        {
-                            File1.Write(",");
                         }
                         File1.Write("\n");
                     }
                     File1.Close();
                     for (int i = 0; i < 11; i++)
                     {
-                        File2.Write("{");
                         for (int j = 0; j < 4; j++)
                         {
-                            File2.Write(JST.GetWeight(1, i, j));
-                            if (j < 3)
-                            {
-                                File2.Write(",");
-                            }
+                            File2.Write(JST.GetWeight(1, i, j) + ",");
 
-                        }
-                        File2.Write("}");
-                        if (i < 10)
-                        {
-                            File2.Write(",");
                         }
                         File2.Write("\n");
                     }
@@ -880,14 +789,14 @@ namespace Ebhuci
                 {
                     while (reader.ReadRow(columns))
                     {
-                        columns.RemoveRange(21, 29);
-                        columns[20] = comboBox1.SelectedItem.ToString();
-                        dataGridView2.Rows.Add(columns.ToArray());
-
-
+                        columns.RemoveRange(20, 30);
+                        columns.Add(comboBox1.SelectedItem.ToString());
+                       dataGridView2.Rows.Add(columns.ToArray());
+                       
+                       
                     }
                 }
-
+                
 
             }
 
@@ -899,335 +808,21 @@ namespace Ebhuci
 
         private void button10_Click(object sender, EventArgs e)
         {
-            saveFileDialog1.Title = "Save Feauture File..";
-            saveFileDialog1.FileName = "";
-            saveFileDialog1.Filter = "CSV (comma delimited)|*.csv|All Files|*.*";
-
-            if (saveFileDialog1.ShowDialog() == DialogResult.Cancel)
+            int numColumns = 20;
+            using (var writer = new CsvFileWriter("as.txt"))
             {
-                MessageBox.Show("Choice Cancelled");
-            }
-            else
-            {
-                int numColumns = 21;
-                using (var writer = new CsvFileWriter(saveFileDialog1.FileName))
+                foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
-                    foreach (DataGridViewRow row in dataGridView2.Rows)
+                    if (!row.IsNewRow)
                     {
-                        if (!row.IsNewRow)
-                        {
-                            List<string> columns = new List<string>();
-                            for (int col = 0; col < numColumns; col++)
-                                columns.Add((string)row.Cells[col].Value ?? String.Empty);
-
-                            writer.WriteRow(columns);
-                        }
+                        List<string> columns = new List<string>();
+                        for (int col = 0; col < numColumns; col++)
+                            columns.Add((string)row.Cells[col].Value ?? String.Empty);
+                        writer.WriteRow(columns);
                     }
                 }
             }
         }
-
-        private void button11_Click(object sender, EventArgs e)
-        {
-            openFileDialog1.Title = "Select First Layer Weight File...";
-            openFileDialog1.FileName = "";
-            openFileDialog1.Filter = "CSV Files|*.csv|All Files|*.*";
-
-            if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-            {
-                MessageBox.Show("Choice Cancelled");
-            }
-            else
-            {
-                w1 = File.ReadAllLines(openFileDialog1.FileName);
-
-                openFileDialog1.Title = "Select Second Layer Weight File...";
-                openFileDialog1.FileName = "";
-                openFileDialog1.Filter = "CSV Files|*.csv|All Files|*.*";
-
-                if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-                {
-                    MessageBox.Show("Choice Cancelled");
-                }
-                else
-                {
-                    w2 = File.ReadAllLines(openFileDialog1.FileName);
-
-             openFileDialog1.Title = "Select Database File...";
-                    openFileDialog1.FileName = "";
-                    openFileDialog1.Filter = "CSV Files|*.csv|All Files|*.*";
-
-                    if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-                    {
-                        MessageBox.Show("Choice Cancelled");
-                    }
-                    else
-                    {
-                        var m = File.ReadAllLines(openFileDialog1.FileName);
-                        List<double> mini = new List<double>();
-                        List<double> maxi = new List<double>();
-                        double[] d1 =  new double[m.Length];
-                        double[] d2 = new double[m.Length];
-                        double[] d3 = new double[m.Length];
-                        double[] d4 = new double[m.Length];
-                        double[] d5 = new double[m.Length];
-                        double[] d6 = new double[m.Length];
-                        double[] d7 = new double[m.Length];
-                        double[] d8 = new double[m.Length];
-                        double[] d9 = new double[m.Length];
-                        double[] d10 = new double[m.Length];
-                        double[] d11 = new double[m.Length];
-                        double[] d12 = new double[m.Length];
-                        double[] d13 = new double[m.Length];
-                        double[] d14 = new double[m.Length];
-                        double[] d15 = new double[m.Length];
-                        double[] d16 = new double[m.Length];
-                        double[] d17 = new double[m.Length];
-                        double[] d18 = new double[m.Length];
-                        double[] d19 = new double[m.Length];
-                        double[] d20 = new double[m.Length];
-
-                        for (int i = 0; i < m.Length; i++)
-                        {
-                            var l = m[i];
-                            List<string> l1 = l.Split(';').ToList();
-                            l1.RemoveAt(20);
-                            var l3 = l1.ToArray();
-                            
-                            var l2 = Array.ConvertAll<string, double>(l3,new Converter<string,double>(Double.Parse));
-
-                            d1[i] = l2[0];
-                            d2[i] = l2[1];
-                            d3[i] = l2[2];
-                            d4[i] = l2[3];
-                            d5[i] = l2[4];
-                            d6[i] = l2[5];
-                            d7[i] = l2[6];
-                            d8[i] = l2[7];
-                            d9[i] = l2[8];
-                            d10[i] = l2[9];
-                            d11[i] = l2[10];
-                            d12[i] = l2[11];
-                            d13[i] = l2[12];
-                            d14[i] = l2[13];
-                            d15[i] = l2[14];
-                            d16[i] = l2[15];
-                            d17[i] = l2[16];
-                            d18[i] = l2[17];
-                            d19[i] = l2[18];
-                            d20[i] = l2[19];
-
-                            
-                        }
-
-                        mini.Add(d1.Min());
-                        mini.Add(d2.Min());
-                        mini.Add(d3.Min());
-                        mini.Add(d4.Min());
-                        mini.Add(d5.Min());
-                        mini.Add(d6.Min());
-                        mini.Add(d7.Min());
-                        mini.Add(d8.Min());
-                        mini.Add(d9.Min());
-                        mini.Add(d10.Min());
-                        mini.Add(d11.Min());
-                        mini.Add(d12.Min());
-                        mini.Add(d13.Min());
-                        mini.Add(d14.Min());
-                        mini.Add(d15.Min());
-                        mini.Add(d16.Min());
-                        mini.Add(d17.Min());
-                        mini.Add(d18.Min());
-                        mini.Add(d19.Min());
-                        mini.Add(d20.Min());
-                        maxi.Add(d1.Max());
-                        maxi.Add(d2.Max());
-                        maxi.Add(d3.Max());
-                        maxi.Add(d4.Max());
-                        maxi.Add(d5.Max());
-                        maxi.Add(d6.Max());
-                        maxi.Add(d7.Max());
-                        maxi.Add(d8.Max());
-                        maxi.Add(d9.Max());
-                        maxi.Add(d10.Max());
-                        maxi.Add(d11.Max());
-                        maxi.Add(d12.Max());
-                        maxi.Add(d13.Max());
-                        maxi.Add(d14.Max());
-                        maxi.Add(d15.Max());
-                        maxi.Add(d16.Max());
-                        maxi.Add(d17.Max());
-                        maxi.Add(d18.Max());
-                        maxi.Add(d19.Max());
-                        maxi.Add(d20.Max());
-
-                        for (int i = 0; i < 20; i++)
-                        {
-                         minmax[i] = "{"+mini[i].ToString()+","+maxi[i].ToString()+"}";
-                            if (i<19)
-                            {
-                                minmax[i] += ",";
-                            }   
-                        }
-
-                        openFileDialog1.Title = "Select Uno-ModeKlasifikasi.ino File...";
-                        openFileDialog1.FileName = "";
-                        openFileDialog1.Filter = "Arduino File|*.ino|All Files|*.*";
-
-                        if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-                        {
-                            MessageBox.Show("Choice Cancelled");
-                        }
-                        else
-                        {
-                            lines = File.ReadAllLines(openFileDialog1.FileName);
-                            for (int i = 9; i < 30; i++)
-                            {
-                                lines[i] = w1[i - 9];
-                            }
-                            for (int i = 32; i < 43; i++)
-                            {
-                                lines[i] = w2[i - 32];
-                            }
-                            for (int i = 45; i < 65; i++)
-                            {
-                                lines[i] = minmax[i - 45];
-                            }
-
-                            File.WriteAllLines(openFileDialog1.FileName, lines);
-                        }
-
-                    }
-
-                }
-
-            }
-        }
-    
-        private void button12_Click(object sender, EventArgs e)
-        {
-            openFileDialog1.Title = "Select First Layer Weight File...";
-            openFileDialog1.FileName = "";
-            openFileDialog1.Filter = "CSV Files|*.csv|All Files|*.*";
-
-            if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-            {
-                MessageBox.Show("Choice Cancelled");
-            }
-            else
-            {
-                w1 = File.ReadAllLines(openFileDialog1.FileName);
-
-                openFileDialog1.Title = "Select Second Layer Weight File...";
-                openFileDialog1.FileName = "";
-                openFileDialog1.Filter = "CSV Files|*.csv|All Files|*.*";
-
-                if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-                {
-                    MessageBox.Show("Choice Cancelled");
-                }
-                else
-                {
-                    w2 = File.ReadAllLines(openFileDialog1.FileName);
-
-                    openFileDialog1.Title = "Select Database File...";
-                    openFileDialog1.FileName = "";
-                    openFileDialog1.Filter = "CSV Files|*.csv|All Files|*.*";
-
-                    if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-                    {
-                        MessageBox.Show("Choice Cancelled");
-                    }
-                    else
-                    {
-                        var m = File.ReadAllLines(openFileDialog1.FileName);
-                        List<double> mini = new List<double>();
-                        List<double> maxi = new List<double>();
-                        double[] d1 = new double[m.Length];
-                        double[] d2 = new double[m.Length];
-                        double[] d3 = new double[m.Length];
-                        double[] d4 = new double[m.Length];
-                        double[] d5 = new double[m.Length];
-                        double[] d6 = new double[m.Length];
-                        double[] d7 = new double[m.Length];
-                        
-                        for (int i = 0; i < m.Length; i++)
-                        {
-                            var l = m[i];
-                            List<string> l1 = l.Split(';').ToList();
-                            l1.RemoveAt(7);
-                            var l3 = l1.ToArray();
-
-                            var l2 = Array.ConvertAll<string, double>(l3, new Converter<string, double>(Double.Parse));
-
-                            d1[i] = l2[0];
-                            d2[i] = l2[1];
-                            d3[i] = l2[2];
-                            d4[i] = l2[3];
-                            d5[i] = l2[4];
-                            d6[i] = l2[5];
-                            d7[i] = l2[6];
-                            
-
-                        }
-
-                        mini.Add(d1.Min());
-                        mini.Add(d2.Min());
-                        mini.Add(d3.Min());
-                        mini.Add(d4.Min());
-                        mini.Add(d5.Min());
-                        mini.Add(d6.Min());
-                        mini.Add(d7.Min());
-                        maxi.Add(d1.Max());
-                        maxi.Add(d2.Max());
-                        maxi.Add(d3.Max());
-                        maxi.Add(d4.Max());
-                        maxi.Add(d5.Max());
-                        maxi.Add(d6.Max());
-                        maxi.Add(d7.Max());
-                        
-                        for (int i = 0; i < 7; i++)
-                        {
-                            minmax[i] = "{" + mini[i].ToString() + "," + maxi[i].ToString() + "}";
-                            if (i < 6)
-                            {
-                                minmax[i] += ",";
-                            }
-                        }
-                        openFileDialog1.Title = "Select Uno-ModeKlasifikasi.ino File...";
-                        openFileDialog1.FileName = "";
-                        openFileDialog1.Filter = "Arduino File|*.ino|All Files|*.*";
-
-                        if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-                        {
-                            MessageBox.Show("Choice Cancelled");
-                        }
-                        else
-                        {
-                            lines = File.ReadAllLines(openFileDialog1.FileName);
-                            for (int i = 10; i < 18; i++)
-                            {
-                                lines[i] = w1[i - 10];
-                            }
-                            for (int i = 20; i < 31; i++)
-                            {
-                                lines[i] = w2[i - 20];
-                            }
-                            for (int i = 33; i < 40; i++)
-                            {
-                                lines[i] = minmax[i - 33];
-                            }
-
-                            File.WriteAllLines(openFileDialog1.FileName, lines);
-                        }
-
-                    }
-
-                }
-
-            }
-        }
-
-        
     }
 }
+

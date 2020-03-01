@@ -128,7 +128,7 @@
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.zedGraphControl1);
             this.Name = "Form4";
-            this.Text = "Tes EMG";
+            this.Text = "EMG Monitor";
             this.Load += new System.EventHandler(this.Form4_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

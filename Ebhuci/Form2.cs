@@ -12,6 +12,7 @@ using System.IO;
 using System.Globalization;
 using MathNet.Filtering.FIR;
 using MathNet.Filtering;
+using MathNet.Numerics.IntegralTransforms;
 
 namespace Ebhuci
 {
@@ -90,30 +91,15 @@ namespace Ebhuci
         private void button2_Click(object sender, EventArgs e)
         {
 
-            //double[] koefFilter = FirCoefficients.BandStop(1000, 49, 51);
+         
             dataFilter = new double[dataMagnitude.Length];
-            //for (int yi = 0; yi < dataMagnitude.Length; yi++)
-            //{
-              //  double t = 0.0;
-
-                //for (int bi = koefFilter.Length - 1; bi >= 0; bi--)
-               // {
-                //    if (yi - bi < 0) continue;
-                 //   t += koefFilter[bi] * dataMagnitude[yi - bi];
-               // }
-               // dataFilter[yi] = t;
-            //}
-            //OnlineFilter bandpass = OnlineFilter.CreateBandpass(MathNet.Filtering.ImpulseResponse.Finite, 1000, 20, 500);
-            OnlineFilter bandstop = OnlineFilter.CreateBandstop(MathNet.Filtering.ImpulseResponse.Finite, 1000, 48.5, 51.5);
-            OnlineFilter denoise = OnlineFilter.CreateDenoise();
-            //dataFilter = bandpass.ProcessSamples(dataMagnitude);
-            dataFilter = bandstop.ProcessSamples(dataMagnitude);
+            OnlineFilter bandpass = OnlineFilter.CreateBandpass(ImpulseResponse.Finite, 1000, 20, 500);
+            OnlineFilter bandstop = OnlineFilter.CreateBandstop(MathNet.Filtering.ImpulseResponse.Finite, 1000, 49, 51);
+           OnlineFilter denoise = OnlineFilter.CreateDenoise();
+            dataFilter = bandpass.ProcessSamples(dataMagnitude);
+            dataFilter = bandstop.ProcessSamples(dataFilter);
             dataFilter = denoise.ProcessSamples(dataFilter);
-            for (int i = 0; i < dataFilter.Length; i++)
-            {
-                dataFilter[i] = Math.Abs(dataFilter[i]);
-                
-            }
+           
             LineItem kurvaMagnitude = zedGraphControl1.GraphPane.CurveList[1] as LineItem;
             IPointListEdit listFilter = kurvaMagnitude.Points as IPointListEdit;
             listFilter.Clear();
@@ -153,7 +139,6 @@ namespace Ebhuci
 
         private void button4_Click(object sender, EventArgs e)
         {
-           // double[] koefFilter = FirCoefficients.BandStop(1024, 49, 51);
             openFileDialog1.Multiselect = true;
             openFileDialog1.Title = "Open Files...";
             openFileDialog1.FileName = "";
@@ -181,24 +166,10 @@ namespace Ebhuci
                     dataMagnitude = data.Select(x => double.Parse(x)).ToArray();
 
                     dataFilter = new double[dataMagnitude.Length];
-                    //for (int yi = 0; yi < dataMagnitude.Length; yi++)
-                    //{
-                      //  double t = 0.0;
-
-//                        for (int bi = koefFilter.Length - 1; bi >= 0; bi--)
-  //                      {
-    //                        if (yi - bi < 0) continue;
-      //                      t += koefFilter[bi] * dataMagnitude[yi - bi];
-        //                }
-          //              dataFilter[yi] = t;
-            //        }
-
-                   // OnlineFilter bandpass = OnlineFilter.CreateBandpass(MathNet.Filtering.ImpulseResponse.Finite, 1000, 20, 500);
-                    OnlineFilter bandstop = OnlineFilter.CreateBandstop(MathNet.Filtering.ImpulseResponse.Finite, 1000, 48.5, 51.5);
-                    OnlineFilter denoise = OnlineFilter.CreateDenoise();
-                    //dataFilter = bandpass.ProcessSamples(dataMagnitude);
+                    OnlineFilter bandstop = OnlineFilter.CreateBandstop(MathNet.Filtering.ImpulseResponse.Finite, 80, 48.5, 51.5);
+                   // OnlineFilter denoise = OnlineFilter.CreateDenoise();
                     dataFilter = bandstop.ProcessSamples(dataMagnitude);
-                    dataFilter = denoise.ProcessSamples(dataFilter);
+                    //dataFilter = denoise.ProcessSamples(dataFilter);
             
                     var path = Path.Combine(saveto, "Datafilter" + Convert.ToString(i) + ".csv");
                     File.WriteAllLines(path, Array.ConvertAll<double, string>(dataFilter, Convert.ToString), Encoding.Default);
@@ -237,6 +208,55 @@ namespace Ebhuci
             LineItem kurvaMagintude = grafikMagnitude.AddCurve("Magnitude", listMagnitude, Color.Red, SymbolType.None);
             LineItem kurvaMagnitude = grafikMagnitude.AddCurve("Filtered", listFilter, Color.Blue, SymbolType.None);
         }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Multiselect = true;
+            openFileDialog1.Title = "Open Files...";
+            openFileDialog1.FileName = "";
+
+            openFileDialog1.Filter = "CSV (comma delimited)|*.csv|All Files|*.*";
+            if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
+            {
+                MessageBox.Show("Choice Cancelled");
+            }
+            else
+            {
+                folderBrowserDialog1.Description = "Choose Folder to Save...";
+                if (folderBrowserDialog1.ShowDialog() == DialogResult.Cancel)
+                {
+                    MessageBox.Show("Choice Cancelled");
+                }
+                else
+                {
+
+                    var saveto = folderBrowserDialog1.SelectedPath;
+
+                    for (int i = 0; i < openFileDialog1.FileNames.Length; i++)
+                    {
+                        data = File.ReadAllLines(openFileDialog1.FileNames[i]);
+                        dataMagnitude = data.Select(x => double.Parse(x)).ToArray();
+
+                        dataFilter = new double[dataMagnitude.Length];
+                        for (int j = 0; j < dataMagnitude.Length; j++)
+                        {
+                            dataFilter[j] = dataMagnitude[j]-511;
+                        }
+
+                        var path = Path.Combine(saveto, "Datafilter" + Convert.ToString(i) + ".csv");
+                        File.WriteAllLines(path, Array.ConvertAll<double, string>(dataFilter, Convert.ToString), Encoding.Default);
+
+                    }
+                    MessageBox.Show("Done");
+                }
+
+
+            }
+
+
+        }
+
+        
        
     }
     

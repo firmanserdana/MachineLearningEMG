@@ -16,11 +16,14 @@ namespace Ebhuci
     public partial class Form4 : Form
     {
         SerialPort uno = new SerialPort("COM6", 9600);
-        double waktustart = 100;
+        //double waktustart = 100;
+        double[] dataMagnitude, dataFilter,waktu;
+        
 
         public Form4()
         {
             InitializeComponent();
+            
         }
 
 
@@ -30,16 +33,22 @@ namespace Ebhuci
             {
                 var ports = SerialPort.GetPortNames();
                 comboBox1.DataSource = ports;  
-                waktustart = Environment.TickCount;
+                //waktustart = Environment.TickCount;
 
                 GraphPane grafikMagnitude = zedGraphControl1.GraphPane;
                 grafikMagnitude.Title.Text = "Monitor EMG";
-                grafikMagnitude.XAxis.Title.Text = "Time (Detik)";
+                grafikMagnitude.XAxis.Title.Text = "Data ke-";
                 grafikMagnitude.YAxis.Title.Text = "Magnitude";
+                grafikMagnitude.YAxis.Scale.Min = -600;
+                grafikMagnitude.YAxis.Scale.Max = 600;
+                grafikMagnitude.XAxis.Scale.Min = 0;
+                grafikMagnitude.XAxis.Scale.Max = 1000;
+                //grafikMagnitude.YAxis.Scale.MagAuto = true;
 
-                RollingPointPairList listMagnitude = new RollingPointPairList(120);
+                PointPairList listMagnitude = new PointPairList();
 
                 LineItem kurvaMagintude = grafikMagnitude.AddCurve("Magnitude", listMagnitude, Color.Red, SymbolType.None);
+
             }
             catch (Exception Gagal) { }
         }
@@ -54,7 +63,9 @@ namespace Ebhuci
                 uno.WriteTimeout = 1000;
             
                 timer1.Enabled = true;
+                timer1.Interval = 1;
                 timer1.Start();
+                uno.Open();
             }
             catch (Exception Gagal)
             { }
@@ -62,42 +73,60 @@ namespace Ebhuci
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            
+            LineItem kurvaMagnitude = zedGraphControl1.GraphPane.CurveList[0] as LineItem;
+            IPointListEdit listMagnitude = kurvaMagnitude.Points as IPointListEdit;
+            
+            dataMagnitude = new double[1000];
+
             try
             {
-                uno.Open();
-               
-                LineItem kurvaMagnitude = zedGraphControl1.GraphPane.CurveList[0] as LineItem;
-                IPointListEdit listMagnitude = kurvaMagnitude.Points as IPointListEdit;
-                double waktu = (Environment.TickCount - waktustart) / 1000.0;
-                double dataMagnitude = double.Parse(uno.ReadLine(), CultureInfo.InvariantCulture.NumberFormat);
+                for (int i = 0; i < 1000; i++)
+                {
+                    dataMagnitude[i] = double.Parse(uno.ReadLine(), CultureInfo.InvariantCulture.NumberFormat);
+
+                }
+            }
+            catch (Exception)
+            {
                 
-             OnlineFilter bandpass = OnlineFilter.CreateBandpass(MathNet.Filtering.ImpulseResponse.Finite, 1000, 20, 500);
+                //uno.Close();
+                return;
+            }
+            
+
+            OnlineFilter bandpass = OnlineFilter.CreateBandpass(MathNet.Filtering.ImpulseResponse.Finite, 1000, 20, 500);
             OnlineFilter bandstop = OnlineFilter.CreateBandstop(MathNet.Filtering.ImpulseResponse.Finite, 1000, 48.5, 51.5);
             OnlineFilter denoise = OnlineFilter.CreateDenoise();
-            double dataFilter = bandpass.ProcessSample(dataMagnitude);
-            dataFilter = bandstop.ProcessSample(dataFilter);
-            dataFilter = denoise.ProcessSample(dataFilter);
-                listMagnitude.Add(waktu, dataFilter);
-                label1.Text = Convert.ToString(dataFilter);
-                uno.Close();
+            dataFilter = new double[1000];
+            dataFilter = bandpass.ProcessSamples(dataMagnitude);
+            dataFilter = bandstop.ProcessSamples(dataFilter);
+            dataFilter = denoise.ProcessSamples(dataFilter);
+            var N = Enumerable.Range(1, dataMagnitude.Length).ToArray();
+            waktu = Array.ConvertAll<int, double>(N, Convert.ToDouble);
                 
-                Scale xScale = zedGraphControl1.GraphPane.XAxis.Scale;
-                if (waktu > xScale.Max - xScale.MajorStep)
-                {
-                    xScale.Max = waktu + xScale.MajorStep;
-                    xScale.Min = xScale.Max - 30.0;
-                }
-
-              // zedGraphControl1.AxisChange();
-                zedGraphControl1.Invalidate();
                 
-
-            }
-            catch (Exception Gagal)
+               
+               
+               // double waktu = (Environment.TickCount - waktustart) / 1000.0;
+                listMagnitude.Clear();
+               
+            for (int i = 0; i < 1000; i++)
             {
-                if (uno.IsOpen)
-                { uno.Close(); }
+                listMagnitude.Add(waktu[i], dataFilter[i]);                
             }
+            
+                label1.Text = Convert.ToString(dataFilter[500]);
+                //uno.Close();
+                
+               
+
+              zedGraphControl1.AxisChange();
+              zedGraphControl1.Refresh();
+                
+
+            
+            
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -128,6 +157,8 @@ namespace Ebhuci
             dspform.Show();
             this.Hide();
         }
+
+        
 
         
 

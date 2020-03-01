@@ -77,6 +77,13 @@ namespace Ebhuci
             this.Hide();
         }
 
+        private void button6_Click(object sender, EventArgs e)
+        {
+            Form6 dspform = new Form6();
+            dspform.Show();
+            this.Hide();
+        }
+
       
     }
 }
